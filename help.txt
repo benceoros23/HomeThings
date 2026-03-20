@@ -1,0 +1,74 @@
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
+    private boolean armed = false;
+    private View layout;
+    private TextView tv;
+    private EditText pin;
+    private Button btnArm, btnDisarm;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_main);
+
+        layout=findViewById(R.id.mainLayout);
+        tv=findViewById(R.id.tvStatus);
+        pin=findViewById(R.id.etPin);
+        btnArm=findViewById(R.id.btnArm);
+        btnDisarm=findViewById(R.id.btnDisarm);
+
+        btnArm.setOnClickListener(v -> {
+            armed=true;
+            tv.setText("ÉLESÍTVE!\nNe mozdítsd meg!");
+            btnArm.setVisibility(View.GONE);
+
+        });
+
+        btnDisarm.setOnClickListener(v -> {
+            if("1234".equals(pin.getText().toString())){
+                layout.setBackgroundColor(Color.WHITE);
+                tv.setText("Készen áll");
+                pin.setText("");
+                pin.setVisibility(View.GONE);
+                btnDisarm.setVisibility(View.GONE);
+                btnArm.setVisibility(View.VISIBLE);
+            }else{
+                Toast.makeText(this, "Hibás PIN!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent e) {
+        if (armed && Math.abs(Math.sqrt(e.values[0]*e.values[0] + e.values[1]*e.values[1] + e.values[2]*e.values[2]) - 9.8f) > 2.0f) {
+            armed = false;
+            layout.setBackgroundColor(Color.RED);
+            tv.setText("RIASZTÁS!!!");
+            pin.setVisibility(View.VISIBLE);
+            btnDisarm.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor s, int a) {}
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
+        if (sm != null) {
+            sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        ((SensorManager) getSystemService(SENSOR_SERVICE)).unregisterListener(this);
+    }
+}
+
+android:configChanges="orientation|screenSize|keyboardHidden"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainLayout" 
