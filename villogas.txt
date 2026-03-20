@@ -1,0 +1,26 @@
+1. Változók deklarálása (Legfelülre, a MainActivity osztály elejére, az armed alá):
+
+Java
+private boolean isRed = false;
+private final Handler h = new Handler();
+private Runnable flash;
+2. A villogó "motor" megírása (Az onCreate metódusba, a findViewById sorok UTÁN, de a gombok setOnClickListener-e ELÉ):
+
+Java
+flash = () -> {
+    layout.setBackgroundColor((isRed = !isRed) ? Color.RED : Color.WHITE);
+    h.postDelayed(flash, 200);
+};
+3. Villogás ELINDÍTÁSA riasztáskor (Az onSensorChanged metódusban, az if ágon belülre. Ezzel cseréled le a fix piros hátteret):
+
+Java
+h.post(flash); 
+4. Villogás LEÁLLÍTÁSA helyes PIN esetén (A btnDisarm.setOnClickListener belsejébe, az if("1234"... ágba, legfelülre):
+
+Java
+h.removeCallbacks(flash);
+5. Villogás LEÁLLÍTÁSA kilépéskor / háttérbe rakáskor (Az onPause metódus legvégére):
+
+Java
+h.removeCallbacks(flash);
+layout.setBackgroundColor(Color.WHITE);
